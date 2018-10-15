@@ -34,7 +34,6 @@ import Control.Monad
 import Data.Colour
 import Data.String
 
-
 -- | The internal state we maintain. Currently it only contains
 --   the foreground and the background colours and if we are
 --   ignoring the background or not.

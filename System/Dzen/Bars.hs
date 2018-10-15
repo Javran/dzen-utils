@@ -40,7 +40,6 @@ module System.Dzen.Bars
     ) where
 
 import Control.Arrow
-import Data.Monoid
 import System.Dzen.Base
 import System.Dzen.Colour
 import System.Dzen.Graphics

@@ -50,10 +50,8 @@ module System.Dzen.Graphics
     ,ignoreBg
     )where
 
-import Data.Monoid
 import System.Dzen.Internal
 import System.Dzen.Base
-
 
 -- $dataTypes
 --
@@ -68,7 +66,6 @@ type Radius = Int
 -- | Draws an icon.
 icon :: FilePath -> DString
 icon = mkCmd True "i"
-
 
 -- | @rect w h@ draws and fills a rectangle of width @w@
 --   and height @h@. The rectangle is vertically centered

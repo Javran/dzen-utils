@@ -21,7 +21,6 @@ module System.Dzen.Process
 
 import Control.Concurrent
 import Control.Monad
-import Data.Function
 import System.IO
 import System.Process hiding (proc)
 import System.Dzen.Base

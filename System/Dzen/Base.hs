@@ -60,13 +60,8 @@ import Prelude hiding ((++))
 import Control.Arrow hiding ((+++))
 import Data.Function
 import Data.String
-import Data.Monoid
 
 import System.Dzen.Internal
-
-
-
-
 
 -- | Converts a @String@ into a @DString@, escaping characters if
 --   needed. This function is used in 'fromString' from 'IsString',
@@ -82,12 +77,6 @@ str = fromString
 -- | @parens open close d@ is equivalent to @mconcat [open, d, close]@.
 parens :: DString -> DString -> DString -> DString
 parens open close d = open ++ d ++ close
-
-
-
-
-
-
 
 -- | A @Printer@ is a cofunctor.
 comap :: (a -> b) -> (Printer b -> Printer a)
@@ -119,14 +108,6 @@ cstr = simple str
 -- | Same as @simple' show@.
 cshow :: Show a => Printer a
 cshow = simple' show
-
-
-
-
-
-
-
-
 
 -- | Class used for combining @DString@s and @Printer@s
 --   exactly like 'mappend'.

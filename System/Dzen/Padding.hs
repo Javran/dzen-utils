@@ -49,7 +49,6 @@ module System.Dzen.Padding
     ) where
 
 import System.Dzen.Internal
-import System.Dzen.Base
 
 -- $padWarning
 --
