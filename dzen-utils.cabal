@@ -22,9 +22,9 @@ description:
   toplevel module "System.Dzen".
 
 library
-  build-depends:     base    >= 4   && < 5
-                   , colour  >= 2.2 && < 3
-                   , process >= 1.0 && < 2
+  build-depends:     base    >= 4
+                   , colour
+                   , process
   ghc-options:       -Wall
   extensions:
     MultiParamTypeClasses,
