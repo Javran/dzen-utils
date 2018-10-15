@@ -33,7 +33,6 @@ import Control.Arrow
 import Control.Monad
 import Data.Colour
 import Data.String
-import Data.Monoid
 
 
 -- | The internal state we maintain. Currently it only contains
@@ -79,11 +78,13 @@ instance Show DString where
     show (DS ds) = concat ["<with empty state: ",
                            show ((fst $ ds emptyState) ""), ">"]
 
-instance Monoid DString where
-    mempty = DS $ const (id, Just 0)
-    mappend (DS ds1) (DS ds2) = DS $ \st -> ds1 st # ds2 st
+instance Semigroup DString where
+    (DS ds1) <> (DS ds2) = DS $ \st -> ds1 st # ds2 st
                         -- Note how we duplicate 'st' above
         where (s1,n1) # (s2,n2) = (s1 . s2, liftM2 (+) n1 n2)
+
+instance Monoid DString where
+    mempty = DS $ const (id, Just 0)
 
 escape :: Int -> String -> (String -> String, Maybe Int)
 escape n s | n `seq` s `seq` False = error "escape: never here"
