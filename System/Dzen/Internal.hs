@@ -32,6 +32,8 @@ import Control.Arrow
 import Control.Monad
 import Data.Colour
 import Data.String
+import Data.Default
+import Data.Functor.Contravariant
 
 -- | The internal state we maintain. Currently it only contains
 --   the foreground and the background colours and if we are
@@ -41,17 +43,16 @@ import Data.String
 --   function receives it and does whatever it want, and not
 --   like a @State@ monad!
 data DSt = S
-    { sFg :: !(Maybe DColour)
-    , sBg :: !(Maybe DColour)
-    , sIgnoreBg :: !Bool
-    }
+  { sFg :: !(Maybe DColour)
+  , sBg :: !(Maybe DColour)
+  , sIgnoreBg :: !Bool
+  }
+
+instance Default DSt where
+    def = S def def True
 
 -- | Our colours.
 type DColour = Colour Double
-
--- | Empty state.
-emptyState :: DSt
-emptyState = S Nothing Nothing True
 
 -- | A @DString@ is used for constant string output, see 'str'.
 --   The @D@ on @DString@ stands for @dzen@, as these strings
@@ -72,7 +73,7 @@ instance IsString DString where
 
 instance Show DString where
     show (DS ds) = concat ["<with empty state: ",
-                           show ((fst $ ds emptyState) ""), ">"]
+                           show ((fst $ ds def) ""), ">"]
 
 instance Semigroup DString where
     (DS ds1) <> (DS ds2) = DS $ \st -> ds1 st # ds2 st
@@ -84,10 +85,9 @@ instance Monoid DString where
 
 escape :: Int -> String -> (String -> String, Maybe Int)
 escape n s | n `seq` s `seq` False = error "escape: never here"
-escape n ('^':xs) = first (t.t) $ escape (n+1) xs where t = (.) ('^':)
+escape n ('^':xs) = first (t.t) $ escape (n+1) xs where t = (('^':) .)
 escape n ( x :xs) = first x'    $ escape (n+1) xs where x' = (.) (x:)
 escape n []       = (id, Just n)
-
 
 -- | Converts a @String@ into a @DString@ without escaping anything.
 --   You /really/ don't need to use this, trust me!
@@ -100,13 +100,13 @@ rawStr str = DS $ const ((str ++), Just $ length str)
 --   Probably you don't need to use this, unless you want
 --   something like a static bar and nothing else.
 toString :: DString -> String
-toString = ("^ib(1)" ++) . ($ "") . fst . ($ emptyState) . unDS
+toString = ("^ib(1)" ++) . ($ "") . fst . ($ def) . unDS
 
 -- | Tries to get the number of characters of the @DString@.
 --   May return @Nothing@ when there are graphical objects.
 --   Probably you don't need to use this function.
 size :: DString -> Maybe Int
-size = snd . ($ emptyState) . unDS
+size = snd . ($ def) . unDS
 --   We apply a new empty state but that shouldn't be a problem
 --   because currently all functions that depend on the state
 --   do not change the size.
@@ -129,10 +129,15 @@ newtype Printer a = P {unP :: DSt -> a -> (DString, Printer a)}
 -- We don't use a Reader just because we already have
 -- to do a lot of pumbling ourselves anyway.
 
+instance Contravariant Printer where
+    contramap f (P dp) = P $ \st input ->
+        let (out,dp') = dp st (f input)
+        in (out, contramap f dp')
+
 -- | Apply a printer to an appropriate input, returning
 --   the output string and the new printer.
 apply :: Printer a -> a -> (String, Printer a)
-apply p i = first toString . ($ i) . ($ emptyState) . unP $ p
+apply p i = first toString . ($ i) . ($ def) . unP $ p
 -- We have apply here in Internal because it uses 'emptyState',
 -- which we don't want to export because its defaults are not
 -- the same as dzen's defaults (we use "ib(1)" by default).

@@ -28,7 +28,6 @@ module System.Dzen.Base
 
      -- * Printers
     ,Printer
-    ,comap
     ,simple
     ,simple'
     ,inputPrinter
@@ -70,18 +69,9 @@ import System.Dzen.Internal
 str :: String -> DString
 str = fromString
 
--- | Used internally, use 'mappend'.
-(++) :: Monoid a => a -> a -> a
-(++) = mappend
-
 -- | @parens open close d@ is equivalent to @mconcat [open, d, close]@.
 parens :: DString -> DString -> DString -> DString
-parens open close d = open ++ d ++ close
-
--- | A @Printer@ is a cofunctor.
-comap :: (a -> b) -> (Printer b -> Printer a)
-comap f (P dp) = P $ \st input -> let (out,dp') = dp st (f input)
-                                  in (out, comap f dp')
+parens open close d = open <> d <> close
 
 -- | Constructs a @Printer@ that depends only on the input.
 simple :: (a -> DString) -> Printer a
@@ -132,19 +122,19 @@ infixr 4 +<+
 
 instance Combine DString DString where
     type Combined DString DString = DString
-    (+++) = (++)
+    (+++) = (<>)
 
 instance Combine DString (Printer a) where
     type Combined DString (Printer a) = Printer a
     ds1 +++ (P dp2) =
         P $ \st input -> let (out2,dp2') = dp2 st input
-                         in (ds1 ++ out2, ds1 +++ dp2')
+                         in (ds1 <> out2, ds1 +++ dp2')
 
 instance Combine (Printer a) DString where
     type Combined (Printer a) DString = Printer a
     (P dp1) +++ ds2 =
         P $ \st input -> let (out1,dp1') = dp1 st input
-                         in (out1 ++ ds2, dp1' +++ ds2)
+                         in (out1 <> ds2, dp1' +++ ds2)
 
 instance Combine (Printer a) (Printer b) where
     type Combined (Printer a) (Printer b) = Printer (a,b)
@@ -228,12 +218,9 @@ combine split = f
             P $ \st input -> let (input1, input2) = split input
                                  (out1, dp1') = dp1 st input1
                                  (out2, dp2') = dp2 st input2
-                             in (out1 ++ out2, f dp1' dp2')
+                             in (out1 <> out2, f dp1' dp2')
                      -- Again, note how state is duplicated
 {-# INLINE combine #-}
-
-
-
 
 -- $apply
 --
