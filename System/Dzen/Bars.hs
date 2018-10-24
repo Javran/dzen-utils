@@ -15,7 +15,7 @@
 -- An example of text progress bar that can be drawn:
 --
 -- > 96% [==================> ]
-
+{-# LANGUAGE OverloadedStrings #-}
 module System.Dzen.Bars
     (-- * Simple interface
      -- ** Mimicking @dbar@

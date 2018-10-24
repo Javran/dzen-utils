@@ -16,7 +16,7 @@
 --  ['Printer'] encapsulates functions take take some input and
 --    produce a @DString@ as a result, allowing them to be
 --    combined and applied.
-
+{-# LANGUAGE TypeFamilies, MultiParamTypeClasses #-}
 module System.Dzen.Base
     (-- * Dzen Strings
      DString

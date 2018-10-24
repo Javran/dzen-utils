@@ -26,10 +26,6 @@ library
                    , colour
                    , process
   ghc-options:       -Wall
-  extensions:
-    MultiParamTypeClasses,
-    OverloadedStrings,
-    TypeFamilies
   exposed-modules:
     System.Dzen,
     System.Dzen.Base,

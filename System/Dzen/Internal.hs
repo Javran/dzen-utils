@@ -12,22 +12,21 @@
 
 module System.Dzen.Internal
     (-- * State
-     DSt(..)
-    ,DColour
+      DSt(..)
+    , DColour
 
      -- * DString
-    ,DString(..)
-    ,rawStr
-    ,toString
-    ,size
-    ,mkCmd
+    , DString(..)
+    , rawStr
+    , toString
+    , size
+    , mkCmd
 
      -- * Printer
-    ,Printer(..)
-    ,apply
-    ,Transform(..)
+    , Printer(..)
+    , apply
+    , Transform(..)
     ) where
-
 
 import Control.Arrow
 import Control.Monad
@@ -41,9 +40,11 @@ import Data.String
 --   This state is passed around like a @Reader@ monad, each
 --   function receives it and does whatever it want, and not
 --   like a @State@ monad!
-data DSt = S {sFg :: !(Maybe DColour)
-             ,sBg :: !(Maybe DColour)
-             ,sIgnoreBg :: !Bool}
+data DSt = S
+    { sFg :: !(Maybe DColour)
+    , sBg :: !(Maybe DColour)
+    , sIgnoreBg :: !Bool
+    }
 
 -- | Our colours.
 type DColour = Colour Double
@@ -51,10 +52,6 @@ type DColour = Colour Double
 -- | Empty state.
 emptyState :: DSt
 emptyState = S Nothing Nothing True
-
-
-
-
 
 -- | A @DString@ is used for constant string output, see 'str'.
 --   The @D@ on @DString@ stands for @dzen@, as these strings
@@ -121,9 +118,9 @@ size = snd . ($ emptyState) . unDS
 --   use @False@ whenever possible.
 mkCmd :: Bool -> String -> String -> DString
 mkCmd graph cmd arg = DS $ const (str, len)
-    where str = ('^':).(cmd++).('(':).(arg++).(')':)
-          len = if graph then Nothing else Just 0
-
+  where
+    str = ('^':).(cmd++).('(':).(arg++).(')':)
+    len = if graph then Nothing else Just 0
 
 -- | A printer is used when the output depends on an input, so a
 --   @Printer a@ generates a 'DString' based on some input of
@@ -139,7 +136,6 @@ apply p i = first toString . ($ i) . ($ emptyState) . unP $ p
 -- We have apply here in Internal because it uses 'emptyState',
 -- which we don't want to export because its defaults are not
 -- the same as dzen's defaults (we use "ib(1)" by default).
-
 
 -- | @Transform@ is a specialization of @Functor@ for @DString@s.
 --   This class is used for functions that may receive @DString@
