@@ -18,26 +18,21 @@
 -- the use of automatic padding.
 
 module System.Dzen.Colour
-    (-- * Changing colours
-     DColour
-    ,fg
-    ,bg
-
-     -- * Reseting to the defaults
-    ,defFg
-    ,defBg
-
-     -- * Change or reset
-    ,changeFg
-    ,changeBg
-    ) where
+  ( -- * Changing colours
+    DColour
+  , fg
+  , bg
+    -- * Reseting to the defaults
+  , defFg
+  , defBg
+    -- * Change or reset
+  , changeFg
+  , changeBg
+  ) where
 
 import Data.Colour.SRGB
 import System.Dzen.Base
 import System.Dzen.Internal
-
-
-
 
 -- | Set the foreground colour. Note that the foreground
 --   colour is changed only inside the transformed @DString@
@@ -54,9 +49,6 @@ fg = changeFg . Just
 bg :: Transform a => DColour -> (a -> a)
 bg = changeBg . Just
 
-
-
-
 -- | Set the foreground colour to be the default one,
 --   which is specified as a parameter to dzen (outside
 --   the control of the printers).
@@ -66,9 +58,6 @@ defFg = changeFg Nothing
 -- | Like 'defFg', but for the background colour.
 defBg :: Transform a => a -> a
 defBg = changeBg Nothing
-
-
-
 
 -- | Set the foreground to be a specified one (@Just c@) or
 --   the dzen's default (@Nothing@). Both 'fg' and 'defFg'
@@ -83,11 +72,6 @@ changeBg :: Transform a => Maybe DColour -> (a -> a)
 changeBg c = transformSt $ \st ->
              if sBg st == c then (st, id)
              else (st {sBg = c}, parensF showBg c (sBg st))
-
-
-
-
-
 
 -- Internal functions
 

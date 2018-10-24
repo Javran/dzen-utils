@@ -103,13 +103,6 @@ gdbar_style size_ fore back True =
            ,grpBorder     = back
            ,grpSize       = size_}
 
-
-
-
-
-
-
-
 -- | The type of the bar to be drawn.
 data BarType = -- | Draws a text bar. Note, however, that the
                --  @DString@s below can be anything, not just

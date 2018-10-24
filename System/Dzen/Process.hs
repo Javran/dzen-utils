@@ -104,7 +104,7 @@ createDzen cmd = createProcess proc >>= extract
           extract (Just handle, Nothing, Nothing, _) = do
             hSetBuffering handle LineBuffering
             return handle
-          extract _ = do
+          extract _ =
               fail "createDzen: extract: (un)expected pipes"
 
 -- | Like @createDzen@, but never uses a shell (which is good).

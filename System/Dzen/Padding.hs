@@ -32,22 +32,22 @@
 -- size. This is very useful if you don't want everything swinging
 -- on your bar everytime the bar is updated.
 module System.Dzen.Padding
-    (-- * Manual padding
-     -- $padWarning
-     padL
-    ,padR
-    ,padC
-    ,pad
-    ,PadWhere(..)
+  ( -- * Manual padding
+    -- $padWarning
+    padL
+  , padR
+  , padC
+  , pad
+  , PadWhere(..)
+    -- * Automatic padding
+    -- $autoPad
+  , autoPadL
+  , autoPadR
+  , autoPadC
+  , autoPad
+  ) where
 
-     -- * Automatic padding
-     -- $autoPad
-    ,autoPadL
-    ,autoPadR
-    ,autoPadC
-    ,autoPad
-    ) where
-
+import Data.Maybe
 import System.Dzen.Internal
 
 -- $padWarning
@@ -92,10 +92,6 @@ pad c w n = transform $ DS . (pad' .) . unDS
 
 -- | Where to add the padding characters.
 data PadWhere = PadLeft | PadRight | PadCenter
-
-
-
-
 
 -- $autoPad
 --
@@ -162,7 +158,7 @@ autoPadC = autoPad ' ' PadCenter
 autoPad :: Char -> PadWhere -> Int -> (Printer a -> Printer a)
 autoPad c w n pr =
     P $ \st input -> let (output, pr') = unP pr st input
-                         s = maybe 0 id $ size output
+                         s = fromMaybe 0 $ size output
                      in case s `compare` n of
                           LT -> (pad c w n output, autoPad c w n pr')
                           _  -> (output,           autoPad c w s pr')
