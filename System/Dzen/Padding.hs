@@ -47,8 +47,10 @@ module System.Dzen.Padding
   , autoPad
   ) where
 
+import Prelude hiding (replicate)
 import Data.Maybe
 import System.Dzen.Internal
+import Data.DList
 
 -- $padWarning
 --
@@ -81,13 +83,19 @@ padC = pad ' ' PadCenter
 pad :: Transform a => Char -> PadWhere -> Int -> (a -> a)
 pad c w n = transform $ DS . (pad' .) . unDS
     where
-      pad' (string, Just k) | k < n =
-          (case w of
-             PadCenter -> repli (d+m) . string . repli d
-             PadLeft   -> repli a . string
-             PadRight  -> string . repli a, Just n)
-          where a = n-k; (d,m) = a `divMod` 2
-                repli = foldr (.) id . flip replicate (c:)
+      pad' :: (DList Char, Maybe Int) -> (DList Char, Maybe Int)
+      pad' (string, Just k) | k < n = (
+            case w of
+              PadCenter -> repli (d+m) <> string <> repli d
+              PadLeft   -> repli a <> string
+              PadRight  -> string <> repli a,
+            Just n
+          )
+          where
+            a = n-k
+            (d,m) = a `divMod` 2
+            repli :: Int -> DList Char
+            repli = flip replicate c
       pad' other = other
 
 -- | Where to add the padding characters.

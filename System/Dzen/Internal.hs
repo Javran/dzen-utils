@@ -9,7 +9,7 @@
 --
 -- Internal data types and functions that are not exported
 -- to the outside world.
-
+{-# LANGUAGE OverloadedStrings #-}
 module System.Dzen.Internal
     (-- * State
       DSt(..)
@@ -34,6 +34,7 @@ import Data.Colour
 import Data.String
 import Data.Default
 import Data.Functor.Contravariant
+import Data.DList hiding (concat, apply)
 
 -- | The internal state we maintain. Currently it only contains
 --   the foreground and the background colours and if we are
@@ -58,7 +59,7 @@ type DColour = Colour Double
 --   The @D@ on @DString@ stands for @dzen@, as these strings
 --   may change depending on the state (and that's why you
 --   shouldn't rely on 'Show', as it just uses an empty state)
-newtype DString = DS {unDS :: DSt -> (String -> String, Maybe Int)}
+newtype DString = DS {unDS :: DSt -> (DList Char, Maybe Int)}
 -- A differencial list of chars (i.e. ShowS) and the number of chars.
 --
 -- Note that we use the @DStrings@ by themselves (i.e. concatenating
@@ -73,26 +74,26 @@ instance IsString DString where
 
 instance Show DString where
     show (DS ds) = concat ["<with empty state: ",
-                           show ((fst $ ds def) ""), ">"]
+                           show (toList (fst $ ds def)), ">"]
 
 instance Semigroup DString where
     (DS ds1) <> (DS ds2) = DS $ \st -> ds1 st # ds2 st
                         -- Note how we duplicate 'st' above
-        where (s1,n1) # (s2,n2) = (s1 . s2, liftM2 (+) n1 n2)
+        where (s1,n1) # (s2,n2) = (s1 <> s2, liftM2 (+) n1 n2)
 
 instance Monoid DString where
-    mempty = DS $ const (id, Just 0)
+    mempty = DS $ const (empty, Just 0)
 
-escape :: Int -> String -> (String -> String, Maybe Int)
+escape :: Int -> String -> (DList Char, Maybe Int)
 escape n s | n `seq` s `seq` False = error "escape: never here"
-escape n ('^':xs) = first (t.t) $ escape (n+1) xs where t = (('^':) .)
-escape n ( x :xs) = first x'    $ escape (n+1) xs where x' = (.) (x:)
-escape n []       = (id, Just n)
+escape n ('^':xs) = first ("^^" <>) $ escape (n+1) xs
+escape n ( x :xs) = first (cons x) $ escape (n+1) xs
+escape n []       = (empty, Just n)
 
 -- | Converts a @String@ into a @DString@ without escaping anything.
 --   You /really/ don't need to use this, trust me!
 rawStr :: String -> DString
-rawStr str = DS $ const ((str ++), Just $ length str)
+rawStr str = DS $ const (fromList str, Just $ length str)
 
 -- | Converts a @DString@ back into a @String@. Note that
 --   @(toString . rawStr)@ is not @id@, otherwise @toString@
@@ -100,7 +101,7 @@ rawStr str = DS $ const ((str ++), Just $ length str)
 --   Probably you don't need to use this, unless you want
 --   something like a static bar and nothing else.
 toString :: DString -> String
-toString = ("^ib(1)" ++) . ($ "") . fst . ($ def) . unDS
+toString = ("^ib(1)" ++) . toList . fst . ($ def) . unDS
 
 -- | Tries to get the number of characters of the @DString@.
 --   May return @Nothing@ when there are graphical objects.
@@ -119,7 +120,7 @@ size = snd . ($ def) . unDS
 mkCmd :: Bool -> String -> String -> DString
 mkCmd graph cmd arg = DS $ const (str, len)
   where
-    str = ('^':).(cmd++).('(':).(arg++).(')':)
+    str = "^" <> fromList cmd <> "(" <> fromList arg <> ")"
     len = if graph then Nothing else Just 0
 
 -- | A printer is used when the output depends on an input, so a

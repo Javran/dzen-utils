@@ -27,6 +27,7 @@ library
                    , process
                    , data-default
                    , contravariant
+                   , dlist
   ghc-options:       -Wall
   exposed-modules:
     System.Dzen,
