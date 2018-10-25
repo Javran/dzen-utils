@@ -214,11 +214,13 @@ instance Combine (Printer a) (Printer b) where
 --   > comap = flip combine (simple $ const mempty) . ((,) () .)   -- pointfree
 combine :: (c -> (a, b)) -> Printer a -> Printer b -> Printer c
 combine split = f
-  where f (P dp1) (P dp2) =
-            P $ \st input -> let (input1, input2) = split input
-                                 (out1, dp1') = dp1 st input1
-                                 (out2, dp2') = dp2 st input2
-                             in (out1 <> out2, f dp1' dp2')
+  where
+    f (P dp1) (P dp2) =
+        P $ \st input ->
+          let (input1, input2) = split input
+              (out1, dp1') = dp1 st input1
+              (out2, dp2') = dp2 st input2
+          in (out1 <> out2, f dp1' dp2')
                      -- Again, note how state is duplicated
 {-# INLINE combine #-}
 

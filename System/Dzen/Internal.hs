@@ -59,13 +59,18 @@ type DColour = Colour Double
 --   The @D@ on @DString@ stands for @dzen@, as these strings
 --   may change depending on the state (and that's why you
 --   shouldn't rely on 'Show', as it just uses an empty state)
-newtype DString = DS {unDS :: DSt -> (DList Char, Maybe Int)}
+newtype DString = DS
+  { unDS :: DSt -> (
+          DList Char {- the string -}
+        , Maybe Int {- length of the string, graph might not have a length -}
+        )
+  }
 -- A differencial list of chars (i.e. ShowS) and the number of chars.
 --
 -- Note that we use the @DStrings@ by themselves (i.e. concatenating
 -- with @Printers@) and for output of the @Printers@, but state is
 -- relevant only on the former. The @DString@s returned by Printers
--- always get passed the @emptyState@. Of course it would be better to
+-- always get passed the default state. Of course it would be better to
 -- create two distinct data types, but we'll stick to this semantic
 -- hole for now.
 
@@ -77,13 +82,14 @@ instance Show DString where
                            show (toList (fst $ ds def)), ">"]
 
 instance Semigroup DString where
-    (DS ds1) <> (DS ds2) = DS $ \st -> ds1 st # ds2 st
-                        -- Note how we duplicate 'st' above
-        where (s1,n1) # (s2,n2) = (s1 <> s2, liftM2 (+) n1 n2)
+    (DS ds1) <> (DS ds2) = DS $ \st ->
+        let ((s1,n1), (s2,n2)) = (ds1 st, ds2 st)
+        in (s1 <> s2, liftM2 (+) n1 n2)
 
 instance Monoid DString where
     mempty = DS $ const (empty, Just 0)
 
+-- count length and escape content as it's converted into DString.
 escape :: Int -> String -> (DList Char, Maybe Int)
 escape n s | n `seq` s `seq` False = error "escape: never here"
 escape n ('^':xs) = first ("^^" <>) $ escape (n+1) xs
