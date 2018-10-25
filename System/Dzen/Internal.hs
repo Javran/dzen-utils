@@ -9,7 +9,7 @@
 --
 -- Internal data types and functions that are not exported
 -- to the outside world.
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, TupleSections #-}
 module System.Dzen.Internal
     (-- * State
       DSt(..)
@@ -145,7 +145,7 @@ instance Contravariant Printer where
 --   the output string and the new printer.
 apply :: Printer a -> a -> (String, Printer a)
 apply p i = first toString . ($ i) . ($ def) . unP $ p
--- We have apply here in Internal because it uses 'emptyState',
+-- We have apply here in Internal because it uses @def@,
 -- which we don't want to export because its defaults are not
 -- the same as dzen's defaults (we use "ib(1)" by default).
 
@@ -174,18 +174,20 @@ class Transform a where
     -- | This function is 'id' on @DString@ and
     --   modifies the output of a @Printer a@.
     transform :: (DString -> DString) -> (a -> a)
-    transform f = transformSt (\st -> (st, f))
+    transform f = transformSt (, f)
 
     transformSt :: (DSt -> (DSt, DString -> DString)) -> (a -> a)
 
 instance Transform DString where
     transform = id
-    transformSt f ds = DS $ \st -> let (st', dsT) = f st
-                                   in unDS (dsT ds) st'
+    transformSt f ds = DS $ \st ->
+        let (st', dsT) = f st
+        in unDS (dsT ds) st'
 
 instance Transform (Printer a) where
     transform f = P . (((f *** transform f) .) .) . unP
-    transformSt f (P p) = P $ \st i -> let (st', dsT) = f st
-                                           (ds, p') = p st' i
-                                       in (dsT ds, transformSt f p')
+    transformSt f (P p) = P $ \st i ->
+        let (st', dsT) = f st
+            (ds, p') = p st' i
+        in (dsT ds, transformSt f p')
 
