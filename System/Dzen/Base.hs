@@ -260,5 +260,7 @@ applyMany_ _ [] = []
 --
 --   > applyForever (threadDelay 100000 >> getInfo) (hPutStrLn dzenHandle)
 applyForever :: Monad m => Printer a -> m a -> (String -> m ()) -> m ()
-applyForever p get act = get >>= uncurry (>>) . (act *** f) . apply p
-    where f p' = applyForever p' get act
+applyForever p get act = do
+    inp <- get
+    let (out, p') = apply p inp
+    act out >> applyForever p' get act
