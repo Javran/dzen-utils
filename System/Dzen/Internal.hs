@@ -35,6 +35,7 @@ import Data.String
 import Data.Default
 import Data.Functor.Contravariant
 import Data.DList hiding (concat, apply)
+import Data.Function
 
 -- | The internal state we maintain. Currently it only contains
 --   the foreground and the background colours and if we are
@@ -186,8 +187,8 @@ instance Transform DString where
 
 instance Transform (Printer a) where
     transform f = P . (((f *** transform f) .) .) . unP
-    transformSt f (P p) = P $ \st i ->
-        let (st', dsT) = f st
-            (ds, p') = p st' i
-        in (dsT ds, transformSt f p')
-
+    transformSt f = fix $ \transform' (P p) ->
+        P $ \st i ->
+          let (st', dsT) = f st
+              (ds, p') = p st' i
+          in (dsT ds, transform' p')
