@@ -16,7 +16,7 @@
 --  ['Printer'] encapsulates functions take take some input and
 --    produce a @DString@ as a result, allowing them to be
 --    combined and applied.
-{-# LANGUAGE TypeFamilies, MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies, MultiParamTypeClasses, LambdaCase #-}
 module System.Dzen.Base
     (-- * Dzen Strings
      DString
@@ -239,17 +239,20 @@ combine split = f
 --   time you would ignore the final printer using
 --   'applyMany_', but it can be used to continue applying.
 applyMany :: Printer a -> [a] -> ([String], Printer a)
-applyMany p (i:is) = let (s,p') = apply p i
-                         rest = applyMany p' is
-                     in (s : fst rest, snd rest)
-applyMany p [] = ([], p)
-
+applyMany p = \case
+    (i:is) ->
+        let (s,p') = apply p i
+            rest = applyMany p' is
+        in (s : fst rest, snd rest)
+    [] -> ([], p)
 
 -- | Like 'applyMany' but ignoring the final printer.
 applyMany_ :: Printer a -> [a] -> [String]
-applyMany_ p (i:is) = let (s,p') = apply p i in s : applyMany_ p' is
-applyMany_ _ [] = []
-
+applyMany_ p = \case
+    (i:is) ->
+        let (s,p') = apply p i
+        in s : applyMany_ p' is
+    [] -> []
 
 -- | Apply a printer forever inside a monad. The first action
 --   is used as a supply of inputs while the second action
