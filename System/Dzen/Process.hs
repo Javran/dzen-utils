@@ -10,14 +10,14 @@
 -- Functions for creating supplies and running @dzen@.
 
 module System.Dzen.Process
-    (-- * Simple interface
-     runDzen
-    ,(##)
-
-     -- * Powerful interface
-    ,createDzen
-    ,createDzen'
-    ) where
+  ( -- * Simple interface
+    runDzen
+  , (##)
+  
+    -- * Powerful interface
+  , createDzen
+  , createDzen'
+  ) where
 
 import Control.Concurrent
 import Control.Monad
@@ -53,8 +53,6 @@ runDzen path args delay printer get = do
   handle <- createDzen' path args
   let put s = hPutStrLn handle s >> threadDelay (delay * 1000)
   applyForever printer get put
-
-
 
 -- | This is the same as @liftM2 (,)@, but with as a convenient
 --   operator with right infixity (the same as '+++').  For example,
@@ -97,15 +95,19 @@ infixr 4 ##
 --   > createDzen (ShellCommand "dzen2 -l 8 -bg #331100")
 createDzen :: CmdSpec -> IO Handle
 createDzen cmd = createProcess proc >>= extract
-    where proc = (shell "") {cmdspec   = cmd
-                            ,std_in    = CreatePipe
-                            ,std_out   = Inherit
-                            ,std_err   = Inherit}
-          extract (Just handle, Nothing, Nothing, _) = do
-            hSetBuffering handle LineBuffering
-            return handle
-          extract _ =
-              fail "createDzen: extract: (un)expected pipes"
+    where
+      proc = (shell "")
+        { cmdspec   = cmd
+        , std_in    = CreatePipe
+        , std_out   = Inherit
+        , std_err   = Inherit
+        }
+
+      extract (Just handle, Nothing, Nothing, _) = do
+        hSetBuffering handle LineBuffering
+        pure handle
+      extract _ =
+        fail "createDzen: extract: (un)expected pipes"
 
 -- | Like @createDzen@, but never uses a shell (which is good).
 createDzen' :: FilePath -- ^ @dzen@ executable, likely @\"dzen2\"@
