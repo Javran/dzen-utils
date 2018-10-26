@@ -15,7 +15,7 @@
 -- An example of text progress bar that can be drawn:
 --
 -- > 96% [==================> ]
-{-# LANGUAGE OverloadedStrings, NamedFieldPuns, ExplicitForAll, LambdaCase #-}
+{-# LANGUAGE OverloadedStrings, NamedFieldPuns, ExplicitForAll, LambdaCase, StrictData #-}
 module System.Dzen.Bars
   ( -- * Simple interface
     -- ** Mimicking @dbar@
@@ -116,33 +116,33 @@ data BarType = -- | Draws a text bar. Note, however, that the
                --  'Text' (although performance would be suboptimal).
                Text {
                   -- | Text written at the start.
-                  txtOpen       :: !DString
+                  txtOpen       :: DString
                   -- | Text written for each filled square.
-                 ,txtFilled     :: !DString
+                 ,txtFilled     :: DString
                   -- | Text written for the last filled square.
                   --   If @Nothing@, the same as the filled square
                   --   is used, but more fairly than if you used
                   --   the same value for filled and middle chars.
-                 ,txtMiddle     :: !(Maybe DString)
+                 ,txtMiddle     :: Maybe DString
                   -- | Text written for the unfilled squares.
-                 ,txtBackground :: !DString
+                 ,txtBackground :: DString
                   -- | Text written at the end.
-                 ,txtClose      :: !DString
+                 ,txtClose      :: DString
                   -- | How many squares there should be
                   --   (i.e. does not count the open and close parts).
-                 ,txtWidth      :: !Width}
+                 ,txtWidth      :: Width}
 
                -- | Draws a filled graphical bar, like @gdbar@ would.
              | Filled {
                   -- | Colour used for filled squares, or @Nothing@
                   --   to use the default /foreground/ colour.
-                  grpFilled     :: !(Maybe DColour)
+                  grpFilled     :: Maybe DColour
                   -- | Colour used for the unfilled squares, or
                   --   @Nothing@ to use the default /background/
                   --   colour.
-                 ,grpBackground :: !(Maybe DColour)
+                 ,grpBackground :: Maybe DColour
                   -- | Size of the whole bar.
-                 ,grpSize       :: !(Width, Height)}
+                 ,grpSize       :: (Width, Height)}
 
                -- | Draws a filled graphical bar with a surrounding
                --   border.
@@ -168,8 +168,8 @@ data BarTextType
 --   specify if the text is at the left or the right of the bar,
 --   and @None@ means that no text will be written.
 data BarText
-    = AtLeft !BarTextType
-    | AtRight !BarTextType
+    = AtLeft BarTextType
+    | AtRight BarTextType
     | None
     deriving (Eq, Ord, Show)
 
