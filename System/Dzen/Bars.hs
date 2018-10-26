@@ -15,7 +15,7 @@
 -- An example of text progress bar that can be drawn:
 --
 -- > 96% [==================> ]
-{-# LANGUAGE OverloadedStrings, NamedFieldPuns, ExplicitForAll #-}
+{-# LANGUAGE OverloadedStrings, NamedFieldPuns, ExplicitForAll, LambdaCase #-}
 module System.Dzen.Bars
   ( -- * Simple interface
     -- ** Mimicking @dbar@
@@ -63,13 +63,14 @@ cdbar p = cbar (maybeLeft p) . dbarStyle '='
 
 -- | The style produced by the dbar utility.
 dbarStyle :: Char -> Width -> BarType
-dbarStyle c w = Text
+dbarStyle c txtWidth
+    | txtFilled <- str [c] = Text
   { txtOpen       = "["
-  , txtFilled     = str [c]
+  , txtFilled
   , txtMiddle     = Nothing
   , txtBackground = " "
   , txtClose      = "]"
-  , txtWidth      = w
+  , txtWidth
   }
 
 -- | Mimics the gdbar utility. Uses the 'gdbar_style'.
@@ -93,15 +94,18 @@ cgdbar p wh mFill mBg mOOpt = cbar (maybeLeft p) (gdbarStyle wh mFill mBg mOOpt)
 -- | The style of gdbar (or something very close).
 gdbarStyle :: (Width, Height) -> Maybe DColour
             -> Maybe DColour -> Bool -> BarType
-gdbarStyle size_ fore back False =
-    Filled {grpFilled     = fore
-           ,grpBackground = back
-           ,grpSize       = size_}
-gdbarStyle size_ fore back True =
-    Hollow {grpFilled     = fore
-           ,grpBackground = Nothing -- That's what gdbar does!
-           ,grpBorder     = back
-           ,grpSize       = size_}
+gdbarStyle grpSize grpFilled back = \case
+    False -> Filled
+      { grpFilled
+      , grpBackground = back
+      , grpSize
+      }
+    True -> Hollow
+      { grpFilled
+      , grpBackground = Nothing -- That's what gdbar does!
+      , grpBorder     = back
+      , grpSize
+      }
 
 -- | The type of the bar to be drawn.
 data BarType = -- | Draws a text bar. Note, however, that the
