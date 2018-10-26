@@ -15,7 +15,7 @@
 -- An example of text progress bar that can be drawn:
 --
 -- > 96% [==================> ]
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, NamedFieldPuns #-}
 module System.Dzen.Bars
   ( -- * Simple interface
     -- ** Mimicking @dbar@
@@ -215,28 +215,25 @@ barDraw :: (Num a, Enum a, Ord a, Show a) => BarType -> (a,a) -> a -> DString
 barDraw bt range val = case bt of
     Text { txtOpen = to
          , txtFilled = tf
-         , txtMiddle = Just tm   -- <<<<<<<<
+         , txtMiddle
          , txtBackground = tb
          , txtClose = tc
          , txtWidth = tw
          } ->
-        let ((f, b), more) = barRound tw range val
-            r | f >= tw      = to : replicate tw tf
-              | f > 0        = to : replicate f' tf ++ tm : replicate b' tb
-              | more         = to : tm : replicate (tw-1) tb
-              | otherwise    = to : replicate tw tb
-              where (f',b') | more      = (f, b-1)
-                            | otherwise = (f-1, b)
-        in mconcat r `mappend` tc
-    Text { txtOpen = to
-         , txtFilled = tf
-         , txtMiddle = Nothing   -- <<<<<<<<
-         , txtBackground = tb
-         , txtClose = tc
-         , txtWidth = tw} ->
-        let (f, b) = fst $ barRound tw range val
-            r = to : replicate f tf ++ replicate b tb
-        in mconcat r `mappend` tc
+        case txtMiddle of
+          Just tm ->
+              let ((f, b), more) = barRound tw range val
+                  r | f >= tw      = to : replicate tw tf
+                    | f > 0        = to : replicate f' tf ++ tm : replicate b' tb
+                    | more         = to : tm : replicate (tw-1) tb
+                    | otherwise    = to : replicate tw tb
+                    where (f',b') | more      = (f, b-1)
+                                  | otherwise = (f-1, b)
+              in mconcat r <> tc
+          Nothing ->
+             let (f, b) = fst $ barRound tw range val
+                 r = to : replicate f tf ++ replicate b tb
+             in mconcat r <> tc
     Filled { grpFilled = gf
            , grpBackground = gb
            , grpSize = (gw,gh)
