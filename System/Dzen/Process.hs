@@ -8,7 +8,7 @@
 -- Portability :  semi-portable (uses MPTC and type families)
 --
 -- Functions for creating supplies and running @dzen@.
-
+{-# LANGUAGE LambdaCase #-}
 module System.Dzen.Process
   ( -- * Simple interface
     runDzen
@@ -94,20 +94,18 @@ infixr 4 ##
 --   > createDzen (RawCommand "dzen2" ["-p"])
 --   > createDzen (ShellCommand "dzen2 -l 8 -bg #331100")
 createDzen :: CmdSpec -> IO Handle
-createDzen cmd = createProcess proc >>= extract
-    where
-      proc = (shell "")
-        { cmdspec   = cmd
-        , std_in    = CreatePipe
-        , std_out   = Inherit
-        , std_err   = Inherit
-        }
-
-      extract (Just handle, Nothing, Nothing, _) = do
-        hSetBuffering handle LineBuffering
-        pure handle
-      extract _ =
-        fail "createDzen: extract: (un)expected pipes"
+createDzen cmd =
+    let p = (shell "")
+          { cmdspec   = cmd
+          , std_in    = CreatePipe
+          , std_out   = Inherit
+          , std_err   = Inherit
+          }
+    in createProcess p >>= \case
+        (Just handle, _, _, _) -> do
+             hSetBuffering handle LineBuffering
+             pure handle
+        _ -> fail "createDzen: extract: (un)expected pipes"
 
 -- | Like @createDzen@, but never uses a shell (which is good).
 createDzen' :: FilePath -- ^ @dzen@ executable, likely @\"dzen2\"@
