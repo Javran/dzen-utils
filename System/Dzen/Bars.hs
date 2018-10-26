@@ -17,27 +17,25 @@
 -- > 96% [==================> ]
 {-# LANGUAGE OverloadedStrings #-}
 module System.Dzen.Bars
-    (-- * Simple interface
-     -- ** Mimicking @dbar@
-     dbar
-    ,cdbar
-     -- ** Mimicking @gdbar@
-    ,gdbar
-    ,cgdbar
-
-     -- * Generic interface
-    ,bar
-    ,cbar
-    ,BarType(..)
-    ,BarTextType(..)
-    ,BarText(..)
-
-     -- * Styles of the simple interfaces
-     -- You may want to use some of these as the
-     -- base for your own style. Look at the sources!
-    ,dbar_style
-    ,gdbar_style
-    ) where
+  ( -- * Simple interface
+    -- ** Mimicking @dbar@
+    dbar
+  , cdbar
+    -- ** Mimicking @gdbar@
+  , gdbar
+  , cgdbar
+    -- * Generic interface
+  , bar
+  , cbar
+  , BarType(..)
+  , BarTextType(..)
+  , BarText(..)
+    -- * Styles of the simple interfaces
+    -- You may want to use some of these as the
+    -- base for your own style. Look at the sources!
+  , dbarStyle
+  , gdbarStyle
+  ) where
 
 import Control.Arrow
 import System.Dzen.Base
@@ -57,20 +55,22 @@ dbar :: (Num a, Enum a, Ord a, Show a)
      -> (a,a) -- ^ Minimum and maximum values.
      -> a     -- ^ Actual value.
      -> DString
-dbar p = bar (maybeLeft p) . dbar_style '='
+dbar p = bar (maybeLeft p) . dbarStyle '='
 
 -- | Mimics the dbar utility while getting the input dinamically.
 cdbar :: (Num a, Enum a, Ord a, Show a) => Bool -> Width -> (a,a) -> Printer a
-cdbar p = cbar (maybeLeft p) . dbar_style '='
+cdbar p = cbar (maybeLeft p) . dbarStyle '='
 
 -- | The style produced by the dbar utility.
-dbar_style :: Char -> Width -> BarType
-dbar_style c w = Text {txtOpen       = "["
-                      ,txtFilled     = str [c]
-                      ,txtMiddle     = Nothing
-                      ,txtBackground = " "
-                      ,txtClose      = "]"
-                      ,txtWidth      = w}
+dbarStyle :: Char -> Width -> BarType
+dbarStyle c w = Text
+  { txtOpen       = "["
+  , txtFilled     = str [c]
+  , txtMiddle     = Nothing
+  , txtBackground = " "
+  , txtClose      = "]"
+  , txtWidth      = w
+  }
 
 -- | Mimics the gdbar utility. Uses the 'gdbar_style'.
 gdbar :: (Num a, Enum a, Ord a, Show a)
@@ -83,21 +83,21 @@ gdbar :: (Num a, Enum a, Ord a, Show a)
       -> (a,a)           -- ^ Minimum and maximum values.
       -> a               -- ^ Actual value.
       -> DString
-gdbar p = (((bar (maybeLeft p) .) . ) .) . gdbar_style
+gdbar p = (((bar (maybeLeft p) .) . ) .) . gdbarStyle
 
 -- | Mimics the gdbar utility while getting the input dinamically.
 cgdbar :: (Num a, Enum a, Ord a, Show a) => Bool -> (Width, Height)
        -> Maybe DColour -> Maybe DColour -> Bool -> (a,a) -> Printer a
-cgdbar p = (((cbar (maybeLeft p) .) . ) .) . gdbar_style
+cgdbar p = (((cbar (maybeLeft p) .) . ) .) . gdbarStyle
 
 -- | The style of gdbar (or something very close).
-gdbar_style :: (Width, Height) -> Maybe DColour
+gdbarStyle :: (Width, Height) -> Maybe DColour
             -> Maybe DColour -> Bool -> BarType
-gdbar_style size_ fore back False =
+gdbarStyle size_ fore back False =
     Filled {grpFilled     = fore
            ,grpBackground = back
            ,grpSize       = size_}
-gdbar_style size_ fore back True =
+gdbarStyle size_ fore back True =
     Hollow {grpFilled     = fore
            ,grpBackground = Nothing -- That's what gdbar does!
            ,grpBorder     = back
@@ -210,62 +210,60 @@ barText Percentage range val
     = str $ (show . fst . fst $ barRound 100 range val) ++ "%"
 {-# INLINE barText #-}
 
-
 -- | Draws the bar itself.
 barDraw :: (Num a, Enum a, Ord a, Show a) => BarType -> (a,a) -> a -> DString
-barDraw (Text {txtOpen = to
-              ,txtFilled = tf
-              ,txtMiddle = Just tm   -- <<<<<<<<
-              ,txtBackground = tb
-              ,txtClose = tc
-              ,txtWidth = tw}) range val
-    = let ((f, b), more) = barRound tw range val
-          r | f >= tw = to : replicate tw tf
-            | f > 0   = to : replicate f' tf ++ tm : replicate b' tb
-            | more    = to : tm : replicate (tw-1) tb
-            | True    = to : replicate tw tb
-            where (f',b') | more      = (f, b-1)
-                          | otherwise = (f-1, b)
-      in mconcat r `mappend` tc
-
-barDraw (Text {txtOpen = to
-              ,txtFilled = tf
-              ,txtMiddle = Nothing   -- <<<<<<<<
-              ,txtBackground = tb
-              ,txtClose = tc
-              ,txtWidth = tw}) range val
-    = let (f, b) = fst $ barRound tw range val
-          r = to : replicate f tf ++ replicate b tb
-      in mconcat r `mappend` tc
-
-barDraw (Filled {grpFilled = gf
-                ,grpBackground = gb
-                ,grpSize = (gw,gh)}) range val
-    = let (f, b) = fst $ barRound gw range val
-      in mconcat $ [changeFg gf $ rect f gh
+barDraw bt range val = case bt of
+    Text { txtOpen = to
+         , txtFilled = tf
+         , txtMiddle = Just tm   -- <<<<<<<<
+         , txtBackground = tb
+         , txtClose = tc
+         , txtWidth = tw
+         } ->
+        let ((f, b), more) = barRound tw range val
+            r | f >= tw      = to : replicate tw tf
+              | f > 0        = to : replicate f' tf ++ tm : replicate b' tb
+              | more         = to : tm : replicate (tw-1) tb
+              | otherwise    = to : replicate tw tb
+              where (f',b') | more      = (f, b-1)
+                            | otherwise = (f-1, b)
+        in mconcat r `mappend` tc
+    Text { txtOpen = to
+         , txtFilled = tf
+         , txtMiddle = Nothing   -- <<<<<<<<
+         , txtBackground = tb
+         , txtClose = tc
+         , txtWidth = tw} ->
+        let (f, b) = fst $ barRound tw range val
+            r = to : replicate f tf ++ replicate b tb
+        in mconcat r `mappend` tc
+    Filled { grpFilled = gf
+           , grpBackground = gb
+           , grpSize = (gw,gh)
+           } ->
+        let (f, b) = fst $ barRound gw range val
+        in mconcat [changeFg gf $ rect f gh
                    ,transpRect gb b gh]
-
-barDraw (Hollow {grpFilled = gf
-                ,grpBackground = gb
-                ,grpBorder = gbd
-                ,grpSize = (gw_orig, gh_orig)}) range val
-    = let gw = gw_orig - 4 -- Account for the border
-          gh = gh_orig - 4
-          (f, b) = fst $ barRound gw range val
-      in mconcat $ [pos 2
-                   ,changeFg gf $ rect f gh
-                   ,transpRect gb b gh
-                   ,pos $ negate (gw + 2)
-                   ,changeFg gbd $
-                             ignoreBg True $
-                             rectO gw_orig gh_orig]
+    Hollow { grpFilled = gf
+           , grpBackground = gb
+           , grpBorder = gbd
+           , grpSize = (gw_orig, gh_orig)
+           } ->
+        let gw = gw_orig - 4 -- Account for the border
+            gh = gh_orig - 4
+            (f, b) = fst $ barRound gw range val
+      in mconcat [ pos 2
+                 , changeFg gf $ rect f gh
+                 , transpRect gb b gh
+                 , pos $ negate (gw + 2)
+                 , changeFg gbd $ ignoreBg True $ rectO gw_orig gh_orig
+                 ]
 {-# INLINE barDraw #-}
 
 -- | Simulates transparency by not drawing at all.
 transpRect :: Maybe DColour -> Width -> Height -> DString
 transpRect Nothing  w _ = pos w
 transpRect (Just c) w h = fg c $ rect w h
-
 
 -- | Function used for rounding. It always rounds towards minus
 --   infinity, so only the maximum value gives a full bar.
