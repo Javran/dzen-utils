@@ -15,7 +15,7 @@
 -- An example of text progress bar that can be drawn:
 --
 -- > 96% [==================> ]
-{-# LANGUAGE OverloadedStrings, NamedFieldPuns #-}
+{-# LANGUAGE OverloadedStrings, NamedFieldPuns, ExplicitForAll #-}
 module System.Dzen.Bars
   ( -- * Simple interface
     -- ** Mimicking @dbar@
@@ -83,12 +83,12 @@ gdbar :: (Num a, Enum a, Ord a, Show a)
       -> (a,a)           -- ^ Minimum and maximum values.
       -> a               -- ^ Actual value.
       -> DString
-gdbar p = (((bar (maybeLeft p) .) . ) .) . gdbarStyle
+gdbar p wh mFill mBg mOOpt = bar (maybeLeft p) (gdbarStyle wh mFill mBg mOOpt)
 
 -- | Mimics the gdbar utility while getting the input dinamically.
 cgdbar :: (Num a, Enum a, Ord a, Show a) => Bool -> (Width, Height)
        -> Maybe DColour -> Maybe DColour -> Bool -> (a,a) -> Printer a
-cgdbar p = (((cbar (maybeLeft p) .) . ) .) . gdbarStyle
+cgdbar p wh mFill mBg mOOpt = cbar (maybeLeft p) (gdbarStyle wh mFill mBg mOOpt)
 
 -- | The style of gdbar (or something very close).
 gdbarStyle :: (Width, Height) -> Maybe DColour
@@ -155,17 +155,19 @@ data BarType = -- | Draws a text bar. Note, however, that the
                deriving (Show)
 
 -- | The type of text to be written.
-data BarTextType = Percentage | Absolute
-                 deriving (Eq, Ord, Show, Enum)
+data BarTextType
+    = Percentage
+    | Absolute
+    deriving (Eq, Ord, Show, Enum)
 
 -- | How to draw the bar text. @AtLeft@ and @AtRight@ are used to
 --   specify if the text is at the left or the right of the bar,
 --   and @None@ means that no text will be written.
-data BarText = AtLeft !BarTextType
-             | AtRight !BarTextType
-             | None
-               deriving (Eq, Ord, Show)
-
+data BarText
+    = AtLeft !BarTextType
+    | AtRight !BarTextType
+    | None
+    deriving (Eq, Ord, Show)
 
 -- | Draws a bar and optionally some text describing some quantity
 --   in relation to some range. For example,
@@ -198,10 +200,9 @@ bar txt bar_ r v =
 
 -- | 'bar' wrapped with 'simple' so that the value is
 --   taken from an input.
-cbar :: (Num a, Enum a, Ord a, Show a) => BarText ->
+cbar :: forall a. (Num a, Enum a, Ord a, Show a) => BarText ->
          BarType -> (a,a) -> Printer a
-cbar = ((simple .) .) . bar
-
+cbar txt ty pair = simple (bar txt ty pair)
 
 -- | Draws the text part of the bar.
 barText :: (Num a, Enum a, Ord a, Show a) => BarTextType -> (a,a) -> a -> DString
