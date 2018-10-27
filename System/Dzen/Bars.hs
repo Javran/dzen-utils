@@ -15,7 +15,14 @@
 -- An example of text progress bar that can be drawn:
 --
 -- > 96% [==================> ]
-{-# LANGUAGE OverloadedStrings, NamedFieldPuns, ExplicitForAll, LambdaCase, StrictData #-}
+{-# LANGUAGE
+    OverloadedStrings
+  , NamedFieldPuns
+  , ExplicitForAll
+  , LambdaCase
+  , StrictData
+  , PatternGuards
+#-}
 module System.Dzen.Bars
   ( -- * Simple interface
     -- ** Mimicking @dbar@
@@ -65,13 +72,13 @@ cdbar p = cbar (maybeLeft p) . dbarStyle '='
 dbarStyle :: Char -> Width -> BarType
 dbarStyle c txtWidth
     | txtFilled <- str [c] = Text
-  { txtOpen       = "["
-  , txtFilled
-  , txtMiddle     = Nothing
-  , txtBackground = " "
-  , txtClose      = "]"
-  , txtWidth
-  }
+        { txtOpen       = "["
+        , txtFilled
+        , txtMiddle     = Nothing
+        , txtBackground = " "
+        , txtClose      = "]"
+        , txtWidth
+        }
 
 -- | Mimics the gdbar utility. Uses the 'gdbar_style'.
 gdbar :: (Num a, Enum a, Ord a, Show a)
