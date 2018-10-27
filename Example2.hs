@@ -1,7 +1,6 @@
-import Data.Monoid
 import Data.Time
 import System.Dzen
-import System.Locale
+import Data.Functor.Contravariant
 
 sep :: DString
 sep = mconcat [str " ", rectO 5 5, str " "]
@@ -15,7 +14,7 @@ zonedSecs = extract . localTimeOfDay . zonedTimeToLocalTime
                       in round (minutes * 60 + todSec t)
 
 timeBar' :: Printer ZonedTime
-timeBar' = comap zonedSecs timeBar
+timeBar' = contramap zonedSecs timeBar
 
 time :: Printer ZonedTime
 time = simple' format +=+ timeBar'

@@ -1,6 +1,5 @@
 import Data.Time
 import System.Dzen
-import System.Locale
 
 printer :: Printer (String, ZonedTime)
 printer = str "Wndn: " +++ cstr +++ str " - " +++ simple' format
