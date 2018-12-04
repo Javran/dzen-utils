@@ -68,7 +68,6 @@ import System.Dzen.Padding
 import System.Dzen.Bars
 import System.Dzen.Process
 
-
 -- $example1p1
 --
 -- Suppose you have

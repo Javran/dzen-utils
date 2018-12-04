@@ -164,9 +164,9 @@ autoPadC = autoPad ' ' PadCenter
 
 -- | Generic automatic padding function, analog to 'pad'.
 autoPad :: Char -> PadWhere -> Int -> (Printer a -> Printer a)
-autoPad c w n pr =
-    P $ \st input -> let (output, pr') = unP pr st input
-                         s = fromMaybe 0 $ size output
-                     in case s `compare` n of
-                          LT -> (pad c w n output, autoPad c w n pr')
-                          _  -> (output,           autoPad c w s pr')
+autoPad c w n pr = P $ \st input ->
+    let (output, pr') = unP pr st input
+        s = fromMaybe 0 $ size output
+    in case s `compare` n of
+         LT -> (pad c w n output, autoPad c w n pr')
+         _  -> (output,           autoPad c w s pr')

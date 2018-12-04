@@ -27,28 +27,26 @@
 -- vertically centered.
 
 module System.Dzen.Graphics
-    (-- * Data types
-     -- $dataTypes
-     Width
-    ,Height
-    ,Radius
+  ( -- * Data types
+    -- $dataTypes
+    Width
+  , Height
+  , Radius
+    -- * Icons
+  , icon
+    -- * Shapes
+  , rect
+  , rectO
+  , circ
+  , circO
 
-     -- * Icons
-    ,icon
+    -- * Positioning
+  , pos
+  , absPos
 
-     -- * Shapes
-    ,rect
-    ,rectO
-    ,circ
-    ,circO
-
-     -- * Positioning
-    ,pos
-    ,absPos
-
-     -- * Misc
-    ,ignoreBg
-    )where
+    -- * Misc
+  , ignoreBg
+  ) where
 
 import System.Dzen.Internal
 import System.Dzen.Base

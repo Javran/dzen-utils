@@ -77,7 +77,7 @@ changeBg c = transformSt $ \st ->
 
 -- | 'parens' with steroids.
 parensF :: (a -> DString) -> a -> a -> DString -> DString
-parensF f = \a b -> parens (f a) (f b)
+parensF f a b = parens (f a) (f b)
 
 -- | Change the foreground colour.
 showFg :: Maybe DColour -> DString
