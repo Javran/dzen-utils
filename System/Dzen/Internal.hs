@@ -62,9 +62,9 @@ type DColour = Colour Double
 --   shouldn't rely on 'Show', as it just uses an empty state)
 newtype DString = DS
   { unDS :: DSt -> (
-          DList Char {- the string -}
-        , Maybe Int {- length of the string, graph might not have a length -}
-        )
+                DList Char {- the string -}
+              , Maybe Int {- length of the string, graph might not have a length -}
+              )
   }
 -- A differencial list of chars (i.e. ShowS) and the number of chars.
 --
@@ -186,7 +186,11 @@ instance Transform DString where
         in unDS (dsT ds) st'
 
 instance Transform (Printer a) where
-    transform f = P . (((f *** transform f) .) .) . unP
+    transform f = fix $ \transform' ->
+      let posComp g x y =
+            let (ds,pr) = g x y
+            in (f ds, transform' pr)
+      in P . posComp . unP
     transformSt f = fix $ \transform' (P p) ->
         P $ \st i ->
           let (st', dsT) = f st

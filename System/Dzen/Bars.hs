@@ -22,7 +22,7 @@
   , LambdaCase
   , StrictData
   , PatternGuards
-#-}
+  #-}
 module System.Dzen.Bars
   ( -- * Simple interface
     -- ** Mimicking @dbar@
