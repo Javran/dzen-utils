@@ -18,42 +18,40 @@
 --    combined and applied.
 {-# LANGUAGE TypeFamilies, MultiParamTypeClasses, LambdaCase #-}
 module System.Dzen.Base
-    (-- * Dzen Strings
-     DString
-    ,str
-    ,rawStr
-    ,toString
-    ,size
-    ,parens
+  ( -- * Dzen Strings
+    DString
+  , str
+  , rawStr
+  , toString
+  , size
+  , parens
+    -- * Printers
+  , Printer
+  , simple
+  , simple'
+  , inputPrinter
+  , inputPrinter'
+  , cstr
+  , cshow
+    -- * Combining printers
+  , Combine(..)
+    -- $combine
+  , (+=+)
+  , (+-+)
+  , (+/+)
+  , (+<+)
+  , combine
 
-     -- * Printers
-    ,Printer
-    ,simple
-    ,simple'
-    ,inputPrinter
-    ,inputPrinter'
-    ,cstr
-    ,cshow
+    -- * Applying printers
+    -- $apply
+  , apply
+  , applyMany
+  , applyMany_
+  , applyForever
 
-     -- * Combining printers
-    ,Combine(..)
-     -- $combine
-    ,(+=+)
-    ,(+-+)
-    ,(+/+)
-    ,(+<+)
-    ,combine
-
-     -- * Applying printers
-     -- $apply
-    ,apply
-    ,applyMany
-    ,applyMany_
-    ,applyForever
-
-     -- * Transforming
-    ,Transform(transform)
-    ) where
+    -- * Transforming
+  ,Transform(transform)
+  ) where
 
 import Prelude hiding ((++))
 import Control.Arrow hiding ((+++))
@@ -266,6 +264,5 @@ applyForever :: Monad m => Printer a -> m a -> (String -> m ()) -> m ()
 applyForever p0 get act = applyForever' p0
   where
     applyForever' p = do
-      inp <- get
-      let (out, p') = apply p inp
+      (out, p') <- apply p <$> get
       act out >> applyForever' p'
