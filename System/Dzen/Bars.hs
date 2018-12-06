@@ -52,8 +52,7 @@ import System.Dzen.Padding
 
 -- | Helper function used below.
 maybeLeft :: Bool -> BarText
-maybeLeft False = None
-maybeLeft True  = AtLeft Percentage
+maybeLeft v = if v then AtLeft Percentage else None
 
 -- | Mimics the dbar utility. Uses the 'dbar_style'.
 dbar :: (Num a, Enum a, Ord a, Show a)
@@ -115,55 +114,58 @@ gdbarStyle grpSize grpFilled back = \case
       }
 
 -- | The type of the bar to be drawn.
-data BarType = -- | Draws a text bar. Note, however, that the
-               --  @DString@s below can be anything, not just
-               --  text. For example, they may have colours ('fg'),
-               --  shapes ('rect's and 'circ's) or 'icon's, you may
-               --  even simulate both 'Filled' and 'Hollow' using just
-               --  'Text' (although performance would be suboptimal).
-               Text {
-                  -- | Text written at the start.
-                  txtOpen       :: DString
-                  -- | Text written for each filled square.
-                 ,txtFilled     :: DString
-                  -- | Text written for the last filled square.
-                  --   If @Nothing@, the same as the filled square
-                  --   is used, but more fairly than if you used
-                  --   the same value for filled and middle chars.
-                 ,txtMiddle     :: Maybe DString
-                  -- | Text written for the unfilled squares.
-                 ,txtBackground :: DString
-                  -- | Text written at the end.
-                 ,txtClose      :: DString
-                  -- | How many squares there should be
-                  --   (i.e. does not count the open and close parts).
-                 ,txtWidth      :: Width}
-
-               -- | Draws a filled graphical bar, like @gdbar@ would.
-             | Filled {
-                  -- | Colour used for filled squares, or @Nothing@
-                  --   to use the default /foreground/ colour.
-                  grpFilled     :: Maybe DColour
-                  -- | Colour used for the unfilled squares, or
-                  --   @Nothing@ to use the default /background/
-                  --   colour.
-                 ,grpBackground :: Maybe DColour
-                  -- | Size of the whole bar.
-                 ,grpSize       :: (Width, Height)}
-
-               -- | Draws a filled graphical bar with a surrounding
-               --   border.
-             | Hollow {
-                  -- | Same as @grpFilled@ above.
-                  grpFilled     :: !(Maybe DColour)
-                  -- | Same as @grpBackground@ above.
-                 ,grpBackground :: !(Maybe DColour)
-                  -- | Colour of the border, or @Nothing@ to use
-                  --   the default /foreground/ colour.
-                 ,grpBorder     :: !(Maybe DColour)
-                  -- | Size of the whole bar (including border).
-                 ,grpSize       :: !(Width, Height)}
-               deriving (Show)
+data BarType
+  -- | Draws a text bar. Note, however, that the
+  --  @DString@s below can be anything, not just
+  --  text. For example, they may have colours ('fg'),
+  --  shapes ('rect's and 'circ's) or 'icon's, you may
+  --  even simulate both 'Filled' and 'Hollow' using just
+  --  'Text' (although performance would be suboptimal).
+  = Text
+    { -- | Text written at the start.
+      txtOpen       :: DString
+      -- | Text written for each filled square.
+    , txtFilled     :: DString
+      -- | Text written for the last filled square.
+      --   If @Nothing@, the same as the filled square
+      --   is used, but more fairly than if you used
+      --   the same value for filled and middle chars.
+    , txtMiddle     :: Maybe DString
+      -- | Text written for the unfilled squares.
+    , txtBackground :: DString
+      -- | Text written at the end.
+    , txtClose      :: DString
+      -- | How many squares there should be
+      --   (i.e. does not count the open and close parts).
+    , txtWidth      :: Width
+    }
+    -- | Draws a filled graphical bar, like @gdbar@ would.
+  | Filled
+    {
+      -- | Colour used for filled squares, or @Nothing@
+      --   to use the default /foreground/ colour.
+      grpFilled     :: Maybe DColour
+      -- | Colour used for the unfilled squares, or
+      --   @Nothing@ to use the default /background/
+      --   colour.
+    , grpBackground :: Maybe DColour
+      -- | Size of the whole bar.
+    , grpSize       :: (Width, Height)}
+    -- | Draws a filled graphical bar with a surrounding
+    --   border.
+  | Hollow
+    {
+      -- | Same as @grpFilled@ above.
+      grpFilled     :: !(Maybe DColour)
+      -- | Same as @grpBackground@ above.
+    , grpBackground :: !(Maybe DColour)
+      -- | Colour of the border, or @Nothing@ to use
+      --   the default /foreground/ colour.
+    , grpBorder     :: !(Maybe DColour)
+      -- | Size of the whole bar (including border).
+    , grpSize       :: !(Width, Height)
+    }
+  deriving (Show)
 
 -- | The type of text to be written.
 data BarTextType
@@ -205,9 +207,10 @@ bar :: (Num a, Enum a, Ord a, Show a) => BarText ->
 bar txt bar_ r v =
     case txt of
       None      -> drawnBar
-      AtLeft t  -> mconcat [padL 4 (barText t r v), " ", drawnBar]
-      AtRight t -> mconcat [drawnBar, " ", padR 4 (barText t r v)]
-    where drawnBar = barDraw bar_ r v
+      AtLeft t  -> padL 4 (barText t r v) <> " " <> drawnBar
+      AtRight t -> drawnBar <> " " <> padR 4 (barText t r v)
+    where
+      drawnBar = barDraw bar_ r v
 
 -- | 'bar' wrapped with 'simple' so that the value is
 --   taken from an input.
