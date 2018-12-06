@@ -29,13 +29,11 @@ library
                    , contravariant
                    , dlist
   ghc-options:       -Wall
-  exposed-modules:
-    System.Dzen,
-    System.Dzen.Base,
-    System.Dzen.Colour,
-    System.Dzen.Graphics,
-    System.Dzen.Padding,
-    System.Dzen.Bars,
-    System.Dzen.Process
-  other-modules:
-    System.Dzen.Internal
+  exposed-modules:   System.Dzen
+                   , System.Dzen.Base
+                   , System.Dzen.Colour
+                   , System.Dzen.Graphics
+                   , System.Dzen.Padding
+                   , System.Dzen.Bars
+                   , System.Dzen.Process
+  other-modules:     System.Dzen.Internal
