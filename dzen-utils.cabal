@@ -10,7 +10,7 @@ copyright:           (c) 2009 Felipe A. Lessa
 maintainer:          felipe.lessa@gmail.com
 build-type:          Simple
 tested-with:         GHC
-extra-source-files:  Example1.hs, Example2.hs
+extra-source-files:  examples/Example1.hs, examples/Example2.hs
 description:
   This library has everything you need to create your @dzen@'s
   bar input strings using powerful combinators in a type-safe way.
