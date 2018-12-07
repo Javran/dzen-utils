@@ -22,6 +22,7 @@
   , LambdaCase
   , StrictData
   , PatternGuards
+  , ConstraintKinds
   #-}
 module System.Dzen.Bars
   ( -- * Simple interface
@@ -50,12 +51,14 @@ import System.Dzen.Colour
 import System.Dzen.Graphics
 import System.Dzen.Padding
 
+type TNum n = (Num n, Enum n, Ord n, Show n)
+
 -- | Helper function used below.
 maybeLeft :: Bool -> BarText
 maybeLeft v = if v then AtLeft Percentage else None
 
 -- | Mimics the dbar utility. Uses the 'dbar_style'.
-dbar :: (Num a, Enum a, Ord a, Show a)
+dbar :: TNum a
      => Bool  -- ^ If @True@, write the percentage on the left.
      -> Width -- ^ Width of the bar interior.
      -> (a,a) -- ^ Minimum and maximum values.
@@ -64,7 +67,7 @@ dbar :: (Num a, Enum a, Ord a, Show a)
 dbar p = bar (maybeLeft p) . dbarStyle '='
 
 -- | Mimics the dbar utility while getting the input dinamically.
-cdbar :: (Num a, Enum a, Ord a, Show a) => Bool -> Width -> (a,a) -> Printer a
+cdbar :: TNum a => Bool -> Width -> (a,a) -> Printer a
 cdbar p = cbar (maybeLeft p) . dbarStyle '='
 
 -- | The style produced by the dbar utility.
@@ -80,7 +83,7 @@ dbarStyle c txtWidth
         }
 
 -- | Mimics the gdbar utility. Uses the 'gdbar_style'.
-gdbar :: (Num a, Enum a, Ord a, Show a)
+gdbar :: TNum a
       => Bool            -- ^ If @True@, write the percentage on the left.
       -> (Width, Height) -- ^ Size of the whole bar (excluding text).
       -> Maybe DColour   -- ^ Filled colour (see 'grpFilled').
@@ -93,7 +96,7 @@ gdbar :: (Num a, Enum a, Ord a, Show a)
 gdbar p wh mFill mBg mOOpt = bar (maybeLeft p) (gdbarStyle wh mFill mBg mOOpt)
 
 -- | Mimics the gdbar utility while getting the input dinamically.
-cgdbar :: (Num a, Enum a, Ord a, Show a) => Bool -> (Width, Height)
+cgdbar :: TNum a => Bool -> (Width, Height)
        -> Maybe DColour -> Maybe DColour -> Bool -> (a,a) -> Printer a
 cgdbar p wh mFill mBg mOOpt = cbar (maybeLeft p) (gdbarStyle wh mFill mBg mOOpt)
 
@@ -202,7 +205,7 @@ data BarText
 --   > "[                    ] 2%  "
 --
 --   so the padding always inserts the spaces on the outside.
-bar :: (Num a, Enum a, Ord a, Show a) => BarText ->
+bar :: TNum a => BarText ->
        BarType -> (a,a) -> a -> DString
 bar txt bar_ r v =
     case txt of
@@ -214,19 +217,19 @@ bar txt bar_ r v =
 
 -- | 'bar' wrapped with 'simple' so that the value is
 --   taken from an input.
-cbar :: forall a. (Num a, Enum a, Ord a, Show a) => BarText ->
+cbar :: forall a. TNum a => BarText ->
          BarType -> (a,a) -> Printer a
 cbar txt ty pair = simple (bar txt ty pair)
 
 -- | Draws the text part of the bar.
-barText :: (Num a, Enum a, Ord a, Show a) => BarTextType -> (a,a) -> a -> DString
+barText :: TNum a => BarTextType -> (a,a) -> a -> DString
 barText Absolute   _     val = str $ show val
 barText Percentage range val
     = str $ (show . fst . fst $ barRound 100 range val) ++ "%"
 {-# INLINE barText #-}
 
 -- | Draws the bar itself.
-barDraw :: (Num a, Enum a, Ord a, Show a) => BarType -> (a,a) -> a -> DString
+barDraw :: TNum a => BarType -> (a,a) -> a -> DString
 barDraw bt range val = case bt of
     Text { txtOpen = to
          , txtFilled = tf
@@ -282,11 +285,11 @@ transpRect (Just c) w h = fg c $ rect w h
 --   Values outside the range are clamped. The boolean returned
 --   is @True@ iff the value would be one more if we rounded
 --   half-up.
-barRound :: (Num a, Enum a, Ord a, Show a) =>
+barRound :: TNum a =>
             Width -> (a,a) -> a -> ((Int, Int), Bool)
 barRound w r n = let (f, b) = barRound' w r n in ((f, w - f), b)
 
-barRound' :: (Num a, Enum a, Ord a, Show a) =>
+barRound' :: TNum a =>
              Width -> (a,a) -> a -> (Int, Bool)
 barRound' w (mini,maxi) n
     | maxi < mini = error "System.Dzen.Bars.bar: max value is less than min."
