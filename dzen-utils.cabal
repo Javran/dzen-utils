@@ -1,4 +1,4 @@
-cabal-version:       >= 1.2.3
+cabal-version:       >= 1.10
 name:                dzen-utils
 version:             0.1.1
 synopsis:            Utilities for creating inputs for dzen.
@@ -22,18 +22,21 @@ description:
   toplevel module "System.Dzen".
 
 library
-  build-depends:     base    >= 4
-                   , colour
-                   , process
-                   , data-default
-                   , contravariant
-                   , dlist
-  ghc-options:       -Wall
-  exposed-modules:   System.Dzen
-                   , System.Dzen.Base
-                   , System.Dzen.Colour
-                   , System.Dzen.Graphics
-                   , System.Dzen.Padding
-                   , System.Dzen.Bars
-                   , System.Dzen.Process
-  other-modules:     System.Dzen.Internal
+  hs-source-dirs:      src
+  build-depends:       base >= 4
+                     , colour
+                     , process
+                     , data-default
+                     , contravariant
+                     , dlist
+  ghc-options:         -Wall
+  exposed-modules:     System.Dzen
+                     , System.Dzen.Base
+                     , System.Dzen.Colour
+                     , System.Dzen.Graphics
+                     , System.Dzen.Padding
+                     , System.Dzen.Bars
+                     , System.Dzen.Process
+  other-modules:       System.Dzen.Internal
+  ghc-options:         -Wall -O2
+  default-language:    Haskell2010
