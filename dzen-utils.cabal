@@ -37,7 +37,7 @@ library
                      , System.Dzen.Padding
                      , System.Dzen.Bars
                      , System.Dzen.Process
-  other-modules:       System.Dzen.Internal
+                     , System.Dzen.Internal
   ghc-options:         -Wall -O2
   default-language:    Haskell2010
 

@@ -18,6 +18,7 @@ module System.Dzen.Internal
      -- * DString
     , DString(..)
     , rawStr
+    , primStr
     , toString
     , size
     , mkCmd
@@ -101,6 +102,11 @@ escape n []       = (empty, Just n)
 --   You /really/ don't need to use this, trust me!
 rawStr :: String -> DString
 rawStr str = DS $ const (fromList str, Just $ length str)
+
+-- | Most primitive API for now. This allows you to make use of "^ca()" markers
+--   in newwer dzen version. But be very careful as you are on your own.
+primStr :: String -> Maybe Int -> DString
+primStr strRaw mLen = DS $ const (fromList strRaw, mLen)
 
 -- | Converts a @DString@ back into a @String@. Note that
 --   @(toString . rawStr)@ is not @id@, otherwise @toString@
