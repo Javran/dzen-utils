@@ -86,7 +86,9 @@ instance Show DString where
 instance Semigroup DString where
     (DS ds1) <> (DS ds2) = DS $ \st ->
         let ((s1,n1), (s2,n2)) = (ds1 st, ds2 st)
-        in (s1 <> s2, liftM2 (+) n1 n2)
+            s = s1 <> s2
+            n = liftM2 (+) n1 n2
+        in s `seq` n `seq` (s, n)
 
 instance Monoid DString where
     mempty = DS $ const (empty, Just 0)
@@ -133,7 +135,7 @@ size = snd . ($ def) . unDS
 mkCmd :: Bool -> String -> String -> DString
 mkCmd graph cmd arg = DS $ const (str, len)
   where
-    str = "^" <> fromList cmd <> "(" <> fromList arg <> ")"
+    str = singleton '^' <> fromList cmd <> singleton '(' <> fromList arg <> singleton ')'
     len = if graph then Nothing else Just 0
 
 -- | A printer is used when the output depends on an input, so a
