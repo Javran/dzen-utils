@@ -57,8 +57,8 @@ import Prelude hiding ((++))
 import Control.Arrow hiding ((+++))
 import Data.Function
 import Data.String
-
 import System.Dzen.Internal
+import Data.Kind (Type)
 
 -- | Converts a @String@ into a @DString@, escaping characters if
 --   needed. This function is used in 'fromString' from 'IsString',
@@ -107,7 +107,7 @@ cshow = simple' show
 --   @Printer (a,b)@.
 class Combine a b where
     -- | The type of the combined input of @a@ with @b@.
-    type Combined a b :: *
+    type Combined a b :: Type
 
     -- | Combine @a@ into @b@. Their outputs are concatenated.
     (+++) :: a -> b -> Combined a b
